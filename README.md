@@ -1,12 +1,14 @@
 # Hyprland Dynamic Workspaces Manager Script 
 I prefer being able to give each workspace a name, instead of the default assigned workspace numbers.
 This script allows me to create workspaces on the fly, name them and switch between them with ease.
- 
+
 # Features
 - Create a workspace with any name that you want.
 - Rename a workspace.
 - Move a window to any workspace.
 - Switch to any window.
+
+https://github.com/sslater11/hyprland-dynamic-workspaces-manager/assets/43177940/47113bd3-9059-48d1-b643-9804b615ac2f
 
 # Dependencies:
 - python3
