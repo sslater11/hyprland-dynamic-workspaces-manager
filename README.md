@@ -123,4 +123,6 @@ options:
   --rename-workspace    Rename the current workspace.
 ```
 
-
+# Credit
+Thanks to Newmanls for the collection of rofi themes that I ship with this.
+https://github.com/newmanls/rofi-themes-collection
