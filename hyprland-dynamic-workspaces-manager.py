@@ -9,7 +9,7 @@ auto_select = False # Set to True for auto selecting the first result in rofi's 
 script_path = os.path.dirname( sys.argv[0] )
 full_script_path = os.path.abspath( script_path )
 
-rofi_theme_path = full_script_path + '/rofi-themes-collection/themes/rounded-nord-dark.rasi'
+rofi_theme_path = full_script_path + '/rofi-themes-collection/themes/rounded-orange-dark.rasi'
 #rofi_theme = "" # Leave this blank to use the default rofi theme.
 # Example of a theme being used.
 rofi_theme = " -theme \'" + rofi_theme_path + "\'"
@@ -96,7 +96,8 @@ def ask_user_which_workspace( prompt_message : str ):
 		str_auto_select = ""
 
 	try:
-		rofi_command = "printf \"" + workspaces + "\" | rofi -no-plugins -matching prefix " + str_auto_select + " " + rofi_theme + " -dmenu -i -p \"" + prompt_message + "\" -selected-row " + str( current_workspace_index )
+		rofi_command = "printf \"" + workspaces + "\" | rofi -no-plugins -matching prefix " + str_auto_select + " " + rofi_theme + " -dmenu -i -p \"" + prompt_message + "\" -selected-row " + str( current_workspace_index ) + " -a " + str( current_workspace_index )
+
 
 		user_choice = subprocess.check_output( rofi_command, shell=True )
 		user_choice = user_choice.decode().strip()
@@ -108,15 +109,72 @@ def ask_user_which_workspace( prompt_message : str ):
 
 
 
+
+
+def get_active_window_address():
+	active_window = subprocess.check_output("""bash -c "hyprctl -j activewindow" """, shell=True )
+	active_window = active_window.decode().strip()
+	active_window = "[ " + active_window + "]"
+	active_window = active_window.replace("\n","")
+	active_window = active_window.replace("\"","\\\"")
+
+	jq = "jq -c 'map(.address)' "
+	jq_result = subprocess.check_output("""bash -c "echo ' """ + active_window + """ ' | """ + jq + "\"", shell=True )
+	jq_result = jq_result.decode().strip()
+	# Remove the braces and quotes at the start and end.
+	window_address = jq_result.replace("\"","").replace("[","").replace("]","")
+	return window_address
+
+
 def app_switcher():
 	# Messy one-liner from emi89ro's post
 	# https://www.reddit.com/r/hyprland/comments/15sro60/windowapp_switcher_recommendations/
-
 	# Wofi one liner
 	#subprocess.check_output("""bash -c "hyprctl dispatch focuswindow address:\"$(hyprctl -j clients | jq 'map(\"\\(.workspace.id) ∴ \\(.workspace.name) ┇ \\(.title) ┇ \\(.address)\")' | sed \"s/,$//; s/^\\[//; s/^\\]//; s/^[[:blank:]]*//; s/^\\"//; s/\\"$//\" | grep -v "^$" | wofi --insensitive -dO alphabetical | grep -o "0x.*$")\"" """, shell=True )
 
-	rofi_command = "rofi -no-plugins " + rofi_theme + " -dmenu -i -p \"Switch to window\""
-	subprocess.check_output("""bash -c "hyprctl dispatch focuswindow address:\"$(hyprctl -j clients | jq 'map(\"\\(.workspace.id) ∴ \\(.workspace.name) ┇ \\(.title) ┇ \\(.address)\")' | sed \"s/,$//; s/^\\[//; s/^\\]//; s/^[[:blank:]]*//; s/^\\"//; s/\\"$//\" | grep -v "^$" | """ + rofi_command + """ | grep -o "0x.*$")\"" """, shell=True )
+	active_window_address = get_active_window_address()
+	active_window_index = 0
+	separator = "__rofi_script_separator__"
+
+	# Get a list of all windows open
+	jq = "jq 'map(\\\"\\(.title)" + separator + "\\(.workspace.name)" + separator + "\\(.address)\\\")' "
+	jq = jq.replace("\\n", "\n")
+	jq_result = subprocess.check_output("""bash -c "hyprctl -j clients | """ + jq + """    """ +"\"", shell=True )
+	jq_result = jq_result.decode().strip()
+
+	# Convert jquery of open windows to a list of strings.
+	jq_result = jq_result.split("\n")
+	# remove the starting and ending braces [ ]
+	jq_result = jq_result[1:-1]
+
+	all_windows = ""
+	for i in range( len( jq_result ) ):
+		# Remove whitespace, the quote at the start and end, and also the comma at the end.
+		window = jq_result[i].strip().lstrip("\"").rstrip(",").rstrip("\"")
+		# Escape backslashes and quotes
+		window = window.replace("\\", "\\\\")
+		window = window.replace("\"", "\\\"")
+		window = window.replace("\'", "\\\'")
+		all_windows += window + "\\n"
+
+		# Set the index number of our active window in this list.
+		window_address = window.split( separator )[2]
+		if window_address == active_window_address:
+			active_window_index = i
+
+	rofi_command = "printf \"" + all_windows + "\" | rofi -no-plugins " + rofi_theme + " -dmenu -i -p \"Switch to window\" -selected-row " + str(active_window_index) + " -a " + str(active_window_index) + " -display-columns 1,2 -display-column-separator \"" + separator + "\""
+
+	user_choice = subprocess.check_output( rofi_command, shell=True )
+	user_choice = user_choice.decode().strip()
+
+	if user_choice != "":
+		user_choice = user_choice.split( separator )
+		window_address = user_choice[2]
+		print( subprocess.check_output( "hyprctl dispatch focuswindow address:" + window_address, shell=True ) )
+
+
+
+
 
 def workspace_switcher():
 	workspace = ask_user_which_workspace( "Switch to workspace:" )
