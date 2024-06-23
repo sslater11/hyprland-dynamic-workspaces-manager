@@ -76,13 +76,14 @@ def rename_workspace():
 
 def ask_user_which_workspace( prompt_message : str ):
 	global auto_select
+	separator = "__rofi_script_separator__"
 	all_workspaces = get_all_workspaces()
 	current_workspace : Workspace = get_current_workspace()
 	workspaces = ""
 	current_workspace_index = -1
 
 	for i in range(0, len(all_workspaces)):
-		workspaces += all_workspaces[i].name + "\n"
+		workspaces += all_workspaces[i].name + separator + all_workspaces[i].id + "\n"
 
 		# Get the index number for our current workspace
 		# We pass this to rofi to select/highlight the line our current workspace shows on.
@@ -96,19 +97,24 @@ def ask_user_which_workspace( prompt_message : str ):
 		str_auto_select = ""
 
 	try:
-		rofi_command = "printf \"" + workspaces + "\" | rofi -no-plugins -matching prefix " + str_auto_select + " " + rofi_theme + " -dmenu -i -p \"" + prompt_message + "\" -selected-row " + str( current_workspace_index ) + " -a " + str( current_workspace_index )
-
+		rofi_command = "printf \"" + workspaces + "\" | rofi -no-plugins -matching prefix " + str_auto_select + " " + rofi_theme + " -dmenu -i -p \"" + prompt_message + "\" -selected-row " + str( current_workspace_index ) + " -a " + str( current_workspace_index ) + " -display-columns 1 -display-column-separator \"" + separator + "\""
 
 		user_choice = subprocess.check_output( rofi_command, shell=True )
 		user_choice = user_choice.decode().strip()
+
+        # TODO:
+        # THERE'S A BUG HERE!
+        # We can't have 2 workspaces with the same name, because we can only switch to one of them.
+        # Currently there's no way in hyprctl to switch to a workspace with a negative id number.
+        # All our named workspaces have negative numbers.
+        # We're stuck with using workspace names as the identifier to switch workspaces.
+
+		user_choice = user_choice.split( separator )[0]
 	except subprocess.CalledProcessError as some_error:
 		# User probably pressed Esc to quit rofi, returning an exit code of 1.
 		user_choice = ""
 
 	return user_choice
-
-
-
 
 
 def get_active_window_address():
@@ -171,9 +177,6 @@ def app_switcher():
 		user_choice = user_choice.split( separator )
 		window_address = user_choice[2]
 		print( subprocess.check_output( "hyprctl dispatch focuswindow address:" + window_address, shell=True ) )
-
-
-
 
 
 def workspace_switcher():
