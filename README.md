@@ -76,15 +76,13 @@ $rename_workspace         = /home/s/.config/hypr/hyprland-dynamic-workspaces-man
 
 
 # Keybindings
-bind = $mainMod, return, exec, $terminal
-bind = $mainMod, Q, killactive,
-
 bind = $mainMod CTRL, space, exec, $app_launcher
 bind = $mainMod CTRL SHIFT, space, exec, $app_launcher_all
 bind = $mainMod ALT, space, exec, $window_switcher
 bind = $mainMod, X, exec, $rename_workspace
 bind = $mainMod, Z, exec, $workspace_switcher
 bind = $mainMod SHIFT, Z, exec, $move_window_to_workspace
+
 bind = $mainMod, tab, workspace, m-1
 bind = $mainMod, F, fullscreen
 
@@ -94,6 +92,10 @@ bind = SUPER SHIFT, left,  movewindow, l
 bind = SUPER SHIFT, right, movewindow, r
 bind = SUPER SHIFT, up,    movewindow, u
 bind = SUPER SHIFT, down,  movewindow, d 
+
+# Other useful keybindings
+bind = $mainMod, return, exec, $terminal
+bind = $mainMod, Q, killactive,
 ```
 - Switch to a workspace, WindowsKey+Z, then type one from the list.
 - Create a /NEW/ workspace and switch to it, WindowsKey+Z, then type a new name. You can even use spaces in the workspace name :).
