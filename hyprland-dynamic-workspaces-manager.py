@@ -197,7 +197,11 @@ def app_switcher():
 def workspace_switcher():
 	workspace = ask_user_which_workspace( "Switch to workspace:" )
 	if workspace != "":
-		subprocess.check_output( "hyprctl dispatch workspace name:"+workspace, shell=True )
+        # Default hyprland workspace switching. Rubbish for our use case of accessing any workspace at any time on any monitor.
+		#subprocess.check_output( "hyprctl dispatch workspace name:"+workspace, shell=True )
+
+        # XMonad style workspace switching. It will swap 2 workspaces, bringing the new one to the current monitor we're on. If both workspaces are on monitors, you will see them swap places.
+		subprocess.check_output( "hyprctl dispatch focusworkspaceoncurrentmonitor name:"+workspace, shell=True )
 
 def move_window_to_workspace():
 	workspace = ask_user_which_workspace( "Move window to workspace" )
