@@ -112,7 +112,7 @@ def ask_user_which_workspace( prompt_message : str ):
 		str_auto_select = ""
 
 	try:
-		rofi_command = "printf \"" + workspaces + "\" | rofi -no-plugins -matching prefix " + str_auto_select + " " + rofi_theme + " -dmenu -i -p \"" + prompt_message + "\" -selected-row " + str( current_workspace_index ) + " -a " + str( current_workspace_index ) + " -display-columns 1 -display-column-separator \"" + separator + "\""
+		rofi_command = "echo -e \"" + workspaces + "\" | rofi -no-plugins -matching prefix " + str_auto_select + " " + rofi_theme + " -dmenu -i -p \"" + prompt_message + "\" -selected-row " + str( current_workspace_index ) + " -a " + str( current_workspace_index ) + " -display-columns 1 -display-column-separator \"" + separator + "\""
 
 		user_choice = subprocess.check_output( rofi_command, shell=True )
 		user_choice = user_choice.decode().strip()
@@ -172,10 +172,6 @@ def app_switcher():
 	for i in range( len( jq_result ) ):
 		# Remove whitespace, the quote at the start and end, and also the comma at the end.
 		window = jq_result[i].strip().lstrip("\"").rstrip(",").rstrip("\"")
-		# Escape backslashes and quotes
-		window = window.replace("\\", "\\\\")
-		window = window.replace("\"", "\\\"")
-		window = window.replace("\'", "\\\'")
 		all_windows += window + "\\n"
 
 		# Set the index number of our active window in this list.
@@ -183,8 +179,7 @@ def app_switcher():
 		if window_address == active_window_address:
 			active_window_index = i
 
-	rofi_command = "printf \"" + all_windows + "\" | rofi -no-plugins " + rofi_theme + " -dmenu -i -p \"Switch to window\" -selected-row " + str(active_window_index) + " -a " + str(active_window_index) + " -display-columns 1,2 -display-column-separator \"" + separator + "\""
-
+	rofi_command = "echo -e \"" + all_windows + "\" | rofi -no-plugins " + rofi_theme + " -dmenu -i -p \"Switch to window\" -selected-row " + str(active_window_index) + " -a " + str(active_window_index) + " -display-columns 1,2 -display-column-separator \"" + separator + "\""
 	user_choice = subprocess.check_output( rofi_command, shell=True )
 	user_choice = user_choice.decode().strip()
 
@@ -192,6 +187,7 @@ def app_switcher():
 		user_choice = user_choice.split( separator )
 		window_address = user_choice[2]
 		print( subprocess.check_output( "hyprctl dispatch focuswindow address:" + window_address, shell=True ) )
+	print( "Warning: This doesn't handle backslash escape characters, like \\n. Need to update code to handle this. If a window has \\n in their title, it will show as 2 different windows in the list." )
 
 
 def workspace_switcher():
