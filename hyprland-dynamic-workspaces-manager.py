@@ -135,17 +135,15 @@ def ask_user_which_workspace( prompt_message : str ):
 def get_active_window_address():
 	active_window = subprocess.check_output("""bash -c "hyprctl -j activewindow" """, shell=True )
 	active_window = active_window.decode().strip()
-	active_window = "[ " + active_window + "]"
-	active_window = active_window.replace("\n","")
-	active_window = active_window.replace("\"","\\\"")
 
-	jq = "jq -c 'map(.address)' "
-	jq_result = subprocess.check_output("""bash -c "echo ' """ + active_window + """ ' | """ + jq + "\"", shell=True )
-	jq_result = jq_result.decode().strip()
-	# Remove the braces and quotes at the start and end.
-	window_address = jq_result.replace("\"","").replace("[","").replace("]","")
-	return window_address
+	window_address_pattern = "\"address\": \"(.*)\","
+	regex_groups = re.search( window_address_pattern, active_window )
 
+	if regex_groups != None:
+		return regex_groups[1]
+	else:
+		print( "ERROR: No window address found, so returning an empty string and hoping the script doesn't break." )
+		return ""
 
 def app_switcher():
 	# Messy one-liner from emi89ro's post
