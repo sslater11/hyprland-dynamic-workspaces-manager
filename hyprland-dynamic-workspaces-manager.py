@@ -98,7 +98,9 @@ def ask_user_which_workspace( prompt_message : str ):
 	current_workspace_index = -1
 
 	for i in range(0, len(all_workspaces)):
-		workspaces += all_workspaces[i].name + separator + all_workspaces[i].id + "\n"
+		workspaces += all_workspaces[i].name + separator + all_workspaces[i].id
+		if i != len( all_workspaces ) - 1:
+			workspaces += "\n"
 
 		# Get the index number for our current workspace
 		# We pass this to rofi to select/highlight the line our current workspace shows on.
@@ -170,7 +172,9 @@ def app_switcher():
 	for i in range( len( jq_result ) ):
 		# Remove whitespace, the quote at the start and end, and also the comma at the end.
 		window = jq_result[i].strip().lstrip("\"").rstrip(",").rstrip("\"")
-		all_windows += window + "\\n"
+		all_windows += window
+		if i != len( jq_result ) - 1:
+			all_windows += "\\n"
 
 		# Set the index number of our active window in this list.
 		window_address = window.split( separator )[2]
