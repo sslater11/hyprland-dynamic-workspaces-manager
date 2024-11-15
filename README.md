@@ -92,7 +92,7 @@ $workspace_switcher       = ~/.config/hypr/hyprland-dynamic-workspaces-manager/h
 $move_window_to_workspace = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --move-window
 $rename_workspace         = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --rename-workspace
 
-# Keybindings
+# Keybindings - Dynamic workspace manager
 bind = $mainMod CTRL, space, exec, $app_launcher
 bind = $mainMod CTRL SHIFT, space, exec, $app_launcher_all
 bind = $mainMod ALT, space, exec, $window_switcher
