@@ -104,13 +104,15 @@ bind = $mainMod, tab, workspace, m-1
 bind = $mainMod SHIFT, tab, workspace, m+1
 ```
 - Switch to a workspace, WindowsKey+Z, then type one from the list.
-- Create a /NEW/ workspace and switch to it, WindowsKey+Z, then type a new name. You can even use spaces in the workspace name :).
+- Create a *NEW* workspace and switch to it, WindowsKey+Z, then type a new name. You can even use spaces in the workspace name :).
 - Move a window to another workspace WindowsKey+Shift+Z, then type the workspace name.
-- Move a window to a /NEW/ workspace WindowsKey+Shift+Z, then type the name of the new workspace.
+- Move a window to a *NEW* workspace WindowsKey+Shift+Z, then type the name of the new workspace.
 - Rename a workspace WindowsKey+X
 - App launcher WindowsKey+Ctrl+Space 
 - App launcher including terminal commands WindowsKey+Ctrl+Shift+Space 
-- Window Switcher  WindowsKey+Alt+Space 
+- Window Switcher -  WindowsKey+Alt+Space 
+- Next Workspace - WindowsKey+Tab
+- Previous Workspace - WindowsKey+Shift+Tab
 
 
 ## Can I still use the normal workspace hotkeys 1-9?
