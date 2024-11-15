@@ -10,14 +10,30 @@ This script allows me to create workspaces on the fly, name them and switch betw
 
 https://github.com/sslater11/hyprland-dynamic-workspaces-manager/assets/43177940/47113bd3-9059-48d1-b643-9804b615ac2f
 
+# Keybindings
+These are my prefered key bindings. 
+
+I use the Windows key as my modifier.
+
+On some keyboards you can press both Ctrl+Win keys together by pressing on the gap inbetween the keys. The same goes for Alt+Win key combination. It makes running programs and switching windows feel like the same action.
+
+| Action                                       | Keybinding                   |
+| -------------------------------------------- | ---------------------------- |
+| Switch to window                             | Alt  + Win + Space           |
+| App launcher                                 | Ctrl + Win + Space           |
+| App launcher alternate                       | Ctrl + Shift + Win + Space   |
+| Rename Workspace                             | Win + x                      |
+| Switch to Workspace                          | Win + z                      |
+| Move the current window to another workspace | Win + Shift + z              |
+
 # Dependencies:
+- rofi - The wayland fork by lbonn found at https://github.com/lbonn/rofi.git
+  - rofi is used for the popup to list all workspaces/windows, and to handle all user input.
+  - You will need to edit the script to change it to another app launcher.
+     - Please see this link for recommended app launchers that may work with this script.
+     - https://wiki.hyprland.org/Useful-Utilities/App-Launchers/
 - python3
 - hyprctl - This should be installed with Hyprland
--  - The wayland fork by lbonn found at https://github.com/lbonn/rofi.git
-  - rofi is used for the popup to list all workspaces/windows, and to handle all user input.
-  - You can edit the script to change it to any other app launcher you prefer.
-  - Please see this link for recommended app launchers that may work with this script.
-  - https://wiki.hyprland.org/Useful-Utilities/App-Launchers/
 
 ## Why does it require rofi(the wayland fork) instead of wofi?
 - Rofi has more features than wofi.
@@ -65,15 +81,14 @@ Below is my default setup.
 Add this to ~/.config/hypr/hyprland.conf
 ```
 # Dynamic workspace manager variable setup
-$app_launcher = rofi -show drun -show-icons -theme /home/s/.config/hypr/hyprland-dynamic-workspaces-manager/rofi-themes-collection/themes/rounded-nord-dark.rasi
+$app_launcher = rofi -show drun -show-icons -theme ~/.config/hypr/hyprland-dynamic-workspaces-manager/rofi-themes-collection/themes/rounded-nord-dark.rasi
 
-$app_launcher_all = rofi -show combi -combi-modes run,drun -show-icons -theme /home/s/.config/hypr/hyprland-dynamic-workspaces-manager/rofi-themes-collection/themes/rounded-nord-dark.rasi
+$app_launcher_all = rofi -show combi -combi-modes run,drun -show-icons -theme ~/.config/hypr/hyprland-dynamic-workspaces-manager/rofi-themes-collection/themes/rounded-nord-dark.rasi
 
-$window_switcher          = /home/s/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --app-window-switcher
-$workspace_switcher       = /home/s/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --workspace
-$move_window_to_workspace = /home/s/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --move-window
-$rename_workspace         = /home/s/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --rename-workspace
-
+$window_switcher          = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --app-window-switcher
+$workspace_switcher       = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --workspace
+$move_window_to_workspace = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --move-window
+$rename_workspace         = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --rename-workspace
 
 # Keybindings
 bind = $mainMod CTRL, space, exec, $app_launcher
