@@ -25,6 +25,8 @@ On some keyboards you can press both Ctrl+Win keys together by pressing on the g
 | Rename Workspace                             | Win + x                      |
 | Switch to Workspace                          | Win + z                      |
 | Move the current window to another workspace | Win + Shift + z              |
+| Next workspace                               | Win + Tab                    |
+| Previous workspace                           | Win + Shift + Tab            |
 
 # Dependencies:
 - rofi - The wayland fork by lbonn found at https://github.com/lbonn/rofi.git
@@ -99,18 +101,7 @@ bind = $mainMod, Z, exec, $workspace_switcher
 bind = $mainMod SHIFT, Z, exec, $move_window_to_workspace
 
 bind = $mainMod, tab, workspace, m-1
-bind = $mainMod, F, fullscreen
-
-# Move windows with mainMod + arrow keys
-bind = $mainMod, left,  movefocus, l
-bind = SUPER SHIFT, left,  movewindow, l
-bind = SUPER SHIFT, right, movewindow, r
-bind = SUPER SHIFT, up,    movewindow, u
-bind = SUPER SHIFT, down,  movewindow, d 
-
-# Other useful keybindings
-bind = $mainMod, return, exec, $terminal
-bind = $mainMod, Q, killactive,
+bind = $mainMod SHIFT, tab, workspace, m+1
 ```
 - Switch to a workspace, WindowsKey+Z, then type one from the list.
 - Create a /NEW/ workspace and switch to it, WindowsKey+Z, then type a new name. You can even use spaces in the workspace name :).
