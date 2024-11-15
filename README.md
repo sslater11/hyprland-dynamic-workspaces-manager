@@ -52,7 +52,7 @@ On some keyboards you can press both Ctrl+Win keys together by pressing on the g
 
 - install python3 using your package manager
 
-Download this script
+## Download this script
 ```
 cd ~/.config/hypr/
 git clone https://github.com/sslater11/hyprland-dynamic-workspaces-manager.git
