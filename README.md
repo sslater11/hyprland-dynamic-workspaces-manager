@@ -121,6 +121,13 @@ Yes. You can still use WindowsKey+1 to access the first workspace. You can renam
 ## How do I delete a workspace?
 You don't! Once a workspace is empty, Hyprland will delete it after you switch to another workspace. This really does help with keeping our workspaces neat and condensed.
 
+# Issues / Bugs
+- New workspace name not set: In older versions of Hyperland(0.45.0 and below), switching to a new workspace will not name it properly, instead the workspace gets the name of its ID number which is a negative number like -1337. You'll have to rename it manually. Bug fixed in newer Hyprland versions.
+- You can have multiple workspaces with the same name, but can only switch to one of those workspaces.
+  - Only an issue if you are creating workspaces with hyprctl.
+  - Hyprland's method that I use doesn't allow us to switch to a workspace by its ID number, so we have to use the workspace name, obviously this is an issue if we have multiple workspaces with the same name.
+  - Just name each workspace differently as you should be doing anyway.
+  - You can rename the workspaces.
 
 # Usage
 ```
