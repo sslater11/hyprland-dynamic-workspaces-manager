@@ -18,6 +18,7 @@ import subprocess
 import re
 import argparse
 import sys, os
+import json
 
 auto_select = False # Set to True for auto selecting the first result in rofi's list that matches what we type. This saves you from pressing enter.
 
@@ -82,31 +83,31 @@ def rename_workspace():
 	except subprocess.CalledProcessError as some_error:
 		# User probably pressed Esc to quit rofi, returning an exit code of 1.
 		user_choice = ""
-	
-
-
-
-
-
 
 def ask_user_which_workspace( prompt_message : str ):
 	global auto_select
-	separator = "__rofi_script_separator__"
 	all_workspaces = get_all_workspaces()
 	current_workspace : Workspace = get_current_workspace()
-	workspaces = ""
+	all_workspaces_as_str = ""
 	current_workspace_index = -1
 
+	# Create a list of workspaces.
 	for i in range(0, len(all_workspaces)):
-		workspaces += all_workspaces[i].name + separator + all_workspaces[i].id
-		if i != len( all_workspaces ) - 1:
-			workspaces += "\n"
+		if i > 0:
+			all_workspaces_as_str += "\n"
+		new_workspace_as_str = all_workspaces[i].name
+		# Make escape sequences visible, i.e. '\n' becomes '\\n' so the user will see \n on their screen.
+		# repr also keeps unicode so we can see emojis and other unicode symbols.
+		new_workspace_as_str = repr(new_workspace_as_str)[1:-1] # [1:-1] - repr returns a string with quotes, so remove these first and last characters.
+		# We want both "\n" and "\\\n" to display as "\\\n" to the user, so they see '\' and 'n' on their screen.
+		# repr also turned a single backslash into two, so this line fixes this.
+		new_workspace_as_str = new_workspace_as_str.replace( '\\\\','\\' )
+		all_workspaces_as_str += new_workspace_as_str
 
 		# Get the index number for our current workspace
 		# We pass this to rofi to select/highlight the line our current workspace shows on.
 		if current_workspace.id == all_workspaces[i].id:
 			current_workspace_index = i
-	
 
 	if auto_select:
 		str_auto_select = " -auto-select "
@@ -114,10 +115,17 @@ def ask_user_which_workspace( prompt_message : str ):
 		str_auto_select = ""
 
 	try:
-		rofi_command = "echo -e \"" + workspaces + "\" | rofi -no-plugins -matching prefix " + str_auto_select + " " + rofi_theme + " -dmenu -i -p \"" + prompt_message + "\" -selected-row " + str( current_workspace_index ) + " -a " + str( current_workspace_index ) + " -display-columns 1 -display-column-separator \"" + separator + "\""
+        # rofi's dmenu option: -format 'i' -- returns the index of the selected entry.
+		rofi_command = ["rofi", "-no-plugins", str_auto_select, "-theme", rofi_theme_path, "-matching prefix", "-dmenu", "-no-custom", "-format", "i", "-i", "-p", prompt_message,     "-selected-row", str( current_workspace_index ) + " -a ", str( current_workspace_index )]
 
-		user_choice = subprocess.check_output( rofi_command, shell=True )
-		user_choice = user_choice.decode().strip()
+		with subprocess.Popen(rofi_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True) as rofi_process:
+			# Directly write data to the stdin of rofi
+			input_data = all_workspaces_as_str
+			user_choice, errors = rofi_process.communicate( input=input_data )
+
+		if user_choice != "":
+			selected_index = int( user_choice.strip() )
+			user_choice = all_workspaces[ selected_index ].name
 
         # TODO:
         # THERE'S A BUG HERE!
@@ -126,7 +134,6 @@ def ask_user_which_workspace( prompt_message : str ):
         # All our named workspaces have negative numbers.
         # We're stuck with using workspace names as the identifier to switch workspaces.
 
-		user_choice = user_choice.split( separator )[0]
 	except subprocess.CalledProcessError as some_error:
 		# User probably pressed Esc to quit rofi, returning an exit code of 1.
 		user_choice = ""
@@ -135,7 +142,7 @@ def ask_user_which_workspace( prompt_message : str ):
 
 
 def get_active_window_address():
-	active_window = subprocess.check_output("""bash -c "hyprctl -j activewindow" """, shell=True )
+	active_window = subprocess.check_output("hyprctl -j activewindow", shell=True )
 	active_window = active_window.decode().strip()
 
 	window_address_pattern = "\"address\": \"(.*)\","
@@ -148,6 +155,7 @@ def get_active_window_address():
 		return ""
 
 def app_switcher():
+	global auto_select
 	# Messy one-liner from emi89ro's post
 	# https://www.reddit.com/r/hyprland/comments/15sro60/windowapp_switcher_recommendations/
 	# Wofi one liner
@@ -157,40 +165,60 @@ def app_switcher():
 	active_window_index = 0
 	separator = "__rofi_script_separator__"
 
-	# Get a list of all windows open
-	jq = "jq 'map(\\\"\\(.title)" + separator + "\\(.workspace.name)" + separator + "\\(.address)\\\")' "
-	jq = jq.replace("\\n", "\n")
-	jq_result = subprocess.check_output("""bash -c "hyprctl -j clients | """ + jq + """    """ +"\"", shell=True )
-	jq_result = jq_result.decode().strip()
+	json_result = subprocess.check_output("hyprctl -j clients", shell=True )
+	json_result = json_result.decode('utf-8').strip()
+	all_windows = json.loads( json_result )
+	
+	# Create a list of all windows for passing to rofi.
+	all_windows_as_str = ""
+	for window in all_windows:
+		if all_windows_as_str != "":
+			all_windows_as_str += "\n"
+		new_window_as_str = window["title"] + separator + window["workspace"]["name"]
+		# Make escape sequences visible, i.e. '\n' becomes '\\n' so the user will see \n on their screen.
+		# repr also keeps unicode so we can see emojis and other unicode symbols.
+		new_window_as_str = repr(new_window_as_str)[1:-1] # [1:-1] - repr returns a string with quotes, so remove these first and last characters.
+		# We want both "\n" and "\\\n" to display as "\\\n" to the user, so they see '\' and 'n' on their screen.
+		# repr also turned a single backslash into two, so this line fixes this.
+		new_window_as_str = new_window_as_str.replace( '\\\\','\\' )
+		all_windows_as_str += new_window_as_str
 
-	# Convert jquery of open windows to a list of strings.
-	jq_result = jq_result.split("\n")
-	# remove the starting and ending braces [ ]
-	jq_result = jq_result[1:-1]
+	# Loop through all windows, check if the current window id is equal to the current one.
+	# Save that index and use it to highlight the row in rofi.
+	active_window_address = get_active_window_address()
+	active_window_index = 0
+	index_counter = -1
+	for window in all_windows:
+		index_counter += 1
+		if window["address"] == active_window_address:
+			# Set the index number of our active window in this list.
+			active_window_index = index_counter
+			break
 
-	all_windows = ""
-	for i in range( len( jq_result ) ):
-		# Remove whitespace, the quote at the start and end, and also the comma at the end.
-		window = jq_result[i].strip().lstrip("\"").rstrip(",").rstrip("\"")
-		all_windows += window
-		if i != len( jq_result ) - 1:
-			all_windows += "\\n"
+	if auto_select:
+		str_auto_select = " -auto-select "
+	else:
+		str_auto_select = ""
 
-		# Set the index number of our active window in this list.
-		window_address = window.split( separator )[2]
-		if window_address == active_window_address:
-			active_window_index = i
+	user_choice = ""
+	try:
+        # rofi's dmenu option: -format 'i' -- returns the index of the selected entry.
+		rofi_command = ["rofi", "-no-plugins", str_auto_select, "-theme", rofi_theme_path, "-dmenu", "-no-custom", "-format", "i", "-i", "-p", "Switch to window", "-selected-row", str(active_window_index), "-a", str(active_window_index), "-display-columns", "1,2", "-display-column-separator", separator ]
 
-	rofi_command = "echo -e \"" + all_windows + "\" | rofi -no-plugins " + rofi_theme + " -dmenu -i -p \"Switch to window\" -selected-row " + str(active_window_index) + " -a " + str(active_window_index) + " -display-columns 1,2 -display-column-separator \"" + separator + "\""
-	user_choice = subprocess.check_output( rofi_command, shell=True )
-	user_choice = user_choice.decode().strip()
+		with subprocess.Popen(rofi_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True) as rofi_process:
+			# Directly write data to the stdin of rofi
+			input_data = all_windows_as_str
+			user_choice, errors = rofi_process.communicate( input=input_data )
+
+		if user_choice != "":
+			selected_index = int( user_choice.strip() )
+			user_choice = all_windows[ selected_index ][ "address" ]
+	except subprocess.CalledProcessError as some_error:
+		# User probably pressed Esc to quit rofi, returning an exit code of 1.
+		user_choice = ""
 
 	if user_choice != "":
-		user_choice = user_choice.split( separator )
-		window_address = user_choice[2]
-		print( subprocess.check_output( "hyprctl dispatch focuswindow address:" + window_address, shell=True ) )
-	print( "Warning: This doesn't handle backslash escape characters, like \\n. Need to update code to handle this. If a window has \\n in their title, it will show as 2 different windows in the list." )
-
+		print( subprocess.check_output( "hyprctl dispatch focuswindow address:" + user_choice, shell=True ) )
 
 def workspace_switcher():
 	workspace = ask_user_which_workspace( "Switch to workspace:" )
@@ -230,7 +258,3 @@ elif args.rename_workspace:
 	rename_workspace()
 else:
 	parser.print_help()
-
-
-#write a function for moving the current window to another workspace.
-#then add arguments for this script
