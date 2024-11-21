@@ -31,8 +31,8 @@ On some keyboards you can press both Ctrl+Win keys together by pressing on the g
 # Dependencies:
 - rofi - The wayland fork by lbonn found at https://github.com/lbonn/rofi.git
   - rofi is used for the popup to list all workspaces/windows, and to handle all user input.
-  - You will need to edit the script to change it to another app launcher.
-     - Please see this link for recommended app launchers that may work with this script.
+  - Other launchers aren't supported (Pull Requests welcome). You will need to edit the script to change it to another app launcher.
+     - Please see this link for recommended app launchers that you may be able to get working with this script.
      - https://wiki.hyprland.org/Useful-Utilities/App-Launchers/
 - python3
 - hyprctl - This should be installed with Hyprland
