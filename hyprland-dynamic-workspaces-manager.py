@@ -78,7 +78,7 @@ def rename_workspace():
 		current_workspace : Workspace = get_current_workspace()
 
 		if user_choice != "":
-			subprocess.check_output( "hyprctl dispatch renameworkspace " + current_workspace.id + " " + user_choice, shell=True )
+			subprocess.check_output( "hyprctl dispatch renameworkspace " + current_workspace.id + " \"" + user_choice + "\"", shell=True )
 
 	except subprocess.CalledProcessError as some_error:
 		# User probably pressed Esc to quit rofi, returning an exit code of 1.
@@ -87,14 +87,12 @@ def rename_workspace():
 def ask_user_which_workspace( prompt_message : str ):
 	global auto_select
 	all_workspaces = get_all_workspaces()
+	all_workspaces_as_list_of_formatted_str = []
 	current_workspace : Workspace = get_current_workspace()
-	all_workspaces_as_str = ""
 	current_workspace_index = -1
 
 	# Create a list of workspaces.
 	for i in range(0, len(all_workspaces)):
-		if i > 0:
-			all_workspaces_as_str += "\n"
 		new_workspace_as_str = all_workspaces[i].name
 		# Make escape sequences visible, i.e. '\n' becomes '\\n' so the user will see \n on their screen.
 		# repr also keeps unicode so we can see emojis and other unicode symbols.
@@ -102,7 +100,7 @@ def ask_user_which_workspace( prompt_message : str ):
 		# We want both "\n" and "\\\n" to display as "\\\n" to the user, so they see '\' and 'n' on their screen.
 		# repr also turned a single backslash into two, so this line fixes this.
 		new_workspace_as_str = new_workspace_as_str.replace( '\\\\','\\' )
-		all_workspaces_as_str += new_workspace_as_str
+		all_workspaces_as_list_of_formatted_str.append( new_workspace_as_str )
 
 		# Get the index number for our current workspace
 		# We pass this to rofi to select/highlight the line our current workspace shows on.
@@ -115,17 +113,19 @@ def ask_user_which_workspace( prompt_message : str ):
 		str_auto_select = ""
 
 	try:
-        # rofi's dmenu option: -format 'i' -- returns the index of the selected entry.
-		rofi_command = ["rofi", "-no-plugins", str_auto_select, "-theme", rofi_theme_path, "-matching prefix", "-dmenu", "-no-custom", "-format", "i", "-i", "-p", prompt_message,     "-selected-row", str( current_workspace_index ) + " -a ", str( current_workspace_index )]
+		rofi_command = ["rofi", "-no-plugins", str_auto_select, "-theme", rofi_theme_path, "-matching prefix", "-dmenu", "-i", "-p", prompt_message,     "-selected-row", str( current_workspace_index ) + " -a ", str( current_workspace_index )]
 
+		all_workspaces_as_str = "\n".join(all_workspaces_as_list_of_formatted_str)
 		with subprocess.Popen(rofi_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True) as rofi_process:
 			# Directly write data to the stdin of rofi
-			input_data = all_workspaces_as_str
-			user_choice, errors = rofi_process.communicate( input=input_data )
+			user_choice, errors = rofi_process.communicate( input=all_workspaces_as_str )
 
-		if user_choice != "":
-			selected_index = int( user_choice.strip() )
-			user_choice = all_workspaces[ selected_index ].name
+		# Rofi puts a newline on the end of our choice, so remove that.
+		user_choice = user_choice.rstrip("\n")
+		if user_choice in all_workspaces_as_list_of_formatted_str:
+			# Set the user's choice as the original workspace name's string.
+			workspace_index = all_workspaces_as_list_of_formatted_str.index( user_choice )
+			user_choice = all_workspaces[ workspace_index ].name
 
         # TODO:
         # THERE'S A BUG HERE!
@@ -224,15 +224,15 @@ def workspace_switcher():
 	workspace = ask_user_which_workspace( "Switch to workspace:" )
 	if workspace != "":
         # Default hyprland workspace switching. Rubbish for our use case of accessing any workspace at any time on any monitor.
-		#subprocess.check_output( "hyprctl dispatch workspace name:"+workspace, shell=True )
+		#subprocess.check_output( "hyprctl dispatch workspace name:\"" + workspace + "\"", shell=True )
 
         # XMonad style workspace switching. It will swap 2 workspaces, bringing the new one to the current monitor we're on. If both workspaces are on monitors, you will see them swap places.
-		subprocess.check_output( "hyprctl dispatch focusworkspaceoncurrentmonitor name:"+workspace, shell=True )
+		subprocess.check_output( "hyprctl dispatch focusworkspaceoncurrentmonitor name:\"" + workspace + "\"", shell=True )
 
 def move_window_to_workspace():
 	workspace = ask_user_which_workspace( "Move window to workspace" )
 	if workspace != "":
-		subprocess.check_output( "hyprctl dispatch movetoworkspace name:"+workspace, shell=True )
+		subprocess.check_output( "hyprctl dispatch movetoworkspace name:\"" + workspace + "\"", shell=True )
 	
 
 
