@@ -87,7 +87,7 @@ $app_launcher = rofi -show drun -show-icons -theme ~/.config/hypr/hyprland-dynam
 
 $app_launcher_all = rofi -show combi -combi-modes run,drun -show-icons -theme ~/.config/hypr/hyprland-dynamic-workspaces-manager/rofi-themes-collection/themes/rounded-nord-dark.rasi
 
-$window_switcher          = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --app-window-switcher
+$window_switcher          = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --window-switcher
 $workspace_switcher       = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --workspace
 $move_window_to_workspace = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --move-window
 $rename_workspace         = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --rename-workspace
@@ -131,15 +131,17 @@ You don't! Once a workspace is empty, Hyprland will delete it after you switch t
 
 # Usage
 ```
-usage: hyprland-dynamic-workspaces-manager.py [-h] [--app-window-switcher] [--workspace-switcher] [--move-window] [--rename-workspace]
+usage: hyprland-dynamic-workspaces-manager.py [-h] [--window-switcher] [--workspace-switcher] [--move-window] [--rename-workspace]
+                                              [--auto-select] [--no-auto-select]
 
 options:
   -h, --help            show this help message and exit
-  --app-window-switcher, --window-switcher, --app-switcher
-                        Switch focus to another window.
+  --window-switcher     Switch focus to another window.
   --workspace-switcher  Switch to another workspace.
   --move-window         Move the focused window to another workspace.
   --rename-workspace    Rename the current workspace.
+  --auto-select         Will automatically select an entry in the list as you type (default: False)
+  --no-auto-select      Will NOT automatically select an entry in the list as you type (default: True)
 ```
 
 # Credit

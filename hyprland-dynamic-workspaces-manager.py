@@ -20,17 +20,6 @@ import argparse
 import sys, os
 import json
 
-auto_select = False # Set to True for auto selecting the first result in rofi's list that matches what we type. This saves you from pressing enter.
-
-script_path = os.path.dirname( sys.argv[0] )
-full_script_path = os.path.abspath( script_path )
-
-rofi_theme_path = full_script_path + '/rofi-themes-collection/themes/rounded-orange-dark.rasi'
-#rofi_theme = "" # Leave this blank to use the default rofi theme.
-# Example of a theme being used.
-rofi_theme = " -theme \'" + rofi_theme_path + "\'"
-
-
 class Workspace:
 	def __init__( self, id : str, name : str ):
 		self.id : str = id
@@ -85,7 +74,7 @@ def rename_workspace():
 		user_choice = ""
 
 def ask_user_which_workspace( prompt_message : str ):
-	global auto_select
+	global is_auto_select
 	all_workspaces = get_all_workspaces()
 	all_workspaces_as_list_of_formatted_str = []
 	current_workspace : Workspace = get_current_workspace()
@@ -107,8 +96,8 @@ def ask_user_which_workspace( prompt_message : str ):
 		if current_workspace.id == all_workspaces[i].id:
 			current_workspace_index = i
 
-	if auto_select:
-		str_auto_select = " -auto-select "
+	if is_auto_select:
+		str_auto_select = "-auto-select"
 	else:
 		str_auto_select = ""
 
@@ -154,8 +143,8 @@ def get_active_window_address():
 		print( "ERROR: No window address found, so returning an empty string and hoping the script doesn't break." )
 		return ""
 
-def app_switcher():
-	global auto_select
+def window_switcher():
+	global is_auto_select
 	# Messy one-liner from emi89ro's post
 	# https://www.reddit.com/r/hyprland/comments/15sro60/windowapp_switcher_recommendations/
 	# Wofi one liner
@@ -195,8 +184,8 @@ def app_switcher():
 			active_window_index = index_counter
 			break
 
-	if auto_select:
-		str_auto_select = " -auto-select "
+	if is_auto_select:
+		str_auto_select = "-auto-select"
 	else:
 		str_auto_select = ""
 
@@ -233,28 +222,39 @@ def move_window_to_workspace():
 	workspace = ask_user_which_workspace( "Move window to workspace" )
 	if workspace != "":
 		subprocess.check_output( "hyprctl dispatch movetoworkspace name:\"" + workspace + "\"", shell=True )
-	
 
 
+if __name__ == "__main__":
+	script_path = os.path.dirname( sys.argv[0] )
+	full_script_path = os.path.abspath( script_path )
+	rofi_theme_path = full_script_path + '/rofi-themes-collection/themes/rounded-orange-dark.rasi'
+	rofi_theme = " -theme \'" + rofi_theme_path + "\'"
 
-# Initialize parser
-parser = argparse.ArgumentParser()
+	# Initialize parser
+	parser = argparse.ArgumentParser()
 
-parser.add_argument("--app-window-switcher","--window-switcher","--app-switcher", help = "Switch focus to another window.", action ="store_true")
-parser.add_argument("--workspace-switcher", help = "Switch to another workspace.", action ="store_true")
-parser.add_argument("--move-window", help = "Move the focused window to another workspace.", action ="store_true")
-parser.add_argument("--rename-workspace", help = "Rename the current workspace.", action ="store_true")
+	parser.add_argument("--window-switcher",    action = "store_true",                        help = "Switch focus to another window.")
+	parser.add_argument("--workspace-switcher", action = "store_true",                        help = "Switch to another workspace.")
+	parser.add_argument("--move-window",        action = "store_true",                        help = "Move the focused window to another workspace.")
+	parser.add_argument("--rename-workspace",   action = "store_true",                        help = "Rename the current workspace.")
+	parser.add_argument("--auto-select",        action = "store_true",                        help = "Will automatically select an entry in the list as you type (default: False)")
+	parser.add_argument("--no-auto-select",     action = "store_false", dest = "auto-select", help = "Will NOT automatically select an entry in the list as you type (default: True)")
 
-# Read arguments from command line
-args = parser.parse_args()
+	parser.set_defaults(auto_select=False)
 
-if args.app_window_switcher:
-	app_switcher()
-elif args.workspace_switcher:
-	workspace_switcher()
-elif args.move_window:
-	move_window_to_workspace()
-elif args.rename_workspace:
-	rename_workspace()
-else:
-	parser.print_help()
+	# Read arguments from command line
+	args = parser.parse_args()
+
+
+	is_auto_select = args.auto_select # Set to True for auto selecting the first result in rofi's list that matches what we type. This saves you from pressing enter.
+
+	if args.window_switcher:
+		window_switcher()
+	elif args.workspace_switcher:
+		workspace_switcher()
+	elif args.move_window:
+		move_window_to_workspace()
+	elif args.rename_workspace:
+		rename_workspace()
+	else:
+		parser.print_help()
