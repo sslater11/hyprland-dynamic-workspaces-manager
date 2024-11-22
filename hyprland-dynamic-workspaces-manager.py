@@ -38,7 +38,6 @@ def get_all_workspaces():
 		if regex_groups != None:
 			all_workspaces.append( Workspace( id = regex_groups.group( 2 ), name = regex_groups.group( 3 ) ))
 
-	
 	return all_workspaces
 
 def get_current_workspace():
@@ -59,7 +58,7 @@ def get_current_workspace():
 
 def rename_workspace():
 	try:
-		rofi_command = "rofi -no-plugins " + rofi_theme + " -dmenu -p \"Rename workspace to\""
+		rofi_command = "rofi -no-plugins -theme \'" + rofi_theme_path + "\' -dmenu -p \"Rename workspace to\""
 
 		user_choice = subprocess.check_output( rofi_command, shell=True )
 		user_choice = user_choice.decode().strip()
@@ -191,7 +190,7 @@ def window_switcher():
 
 	user_choice = ""
 	try:
-        # rofi's dmenu option: -format 'i' -- returns the index of the selected entry.
+		# rofi's dmenu option: -format 'i' -- returns the index of the selected entry.
 		rofi_command = ["rofi", "-no-plugins", str_auto_select, "-theme", rofi_theme_path, "-dmenu", "-no-custom", "-format", "i", "-i", "-p", "Switch to window", "-selected-row", str(active_window_index), "-a", str(active_window_index), "-display-columns", "1,2", "-display-column-separator", separator ]
 
 		with subprocess.Popen(rofi_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True) as rofi_process:
@@ -212,10 +211,10 @@ def window_switcher():
 def workspace_switcher():
 	workspace = ask_user_which_workspace( "Switch to workspace:" )
 	if workspace != "":
-        # Default hyprland workspace switching. Rubbish for our use case of accessing any workspace at any time on any monitor.
+		# Default hyprland workspace switching. Rubbish for our use case of accessing any workspace at any time on any monitor.
 		#subprocess.check_output( "hyprctl dispatch workspace name:\"" + workspace + "\"", shell=True )
 
-        # XMonad style workspace switching. It will swap 2 workspaces, bringing the new one to the current monitor we're on. If both workspaces are on monitors, you will see them swap places.
+		# XMonad style workspace switching. It will swap 2 workspaces, bringing the new one to the current monitor we're on. If both workspaces are on monitors, you will see them swap places.
 		subprocess.check_output( "hyprctl dispatch focusworkspaceoncurrentmonitor name:\"" + workspace + "\"", shell=True )
 
 def move_window_to_workspace():
@@ -225,10 +224,24 @@ def move_window_to_workspace():
 
 
 if __name__ == "__main__":
-	script_path = os.path.dirname( sys.argv[0] )
-	full_script_path = os.path.abspath( script_path )
-	rofi_theme_path = full_script_path + '/rofi-themes-collection/themes/rounded-orange-dark.rasi'
-	rofi_theme = " -theme \'" + rofi_theme_path + "\'"
+	rofi_themes = [
+		"nord",
+		"rounded-blue-dark",
+		"rounded-gray-dark",
+		"rounded-green-dark",
+		"rounded-nord-dark",
+		"rounded-orange-dark",
+		"rounded-pink-dark",
+		"rounded-purple-dark",
+		"rounded-red-dark",
+		"rounded-yellow-dark",
+		"simple-tokyonight",
+		"spotlight-dark",
+		"spotlight",
+		"squared-everforest",
+		"squared-material-red",
+		"squared-nord"
+	]
 
 	# Initialize parser
 	parser = argparse.ArgumentParser()
@@ -240,13 +253,34 @@ if __name__ == "__main__":
 	parser.add_argument("--auto-select",        action = "store_true",                        help = "Will automatically select an entry in the list as you type (default: False)")
 	parser.add_argument("--no-auto-select",     action = "store_false", dest = "auto-select", help = "Will NOT automatically select an entry in the list as you type (default: True)")
 
+	parser.add_argument(
+		'--theme',
+		choices=rofi_themes,
+		default="rounded-orange-dark",
+		help='Set the theme'
+	)
+
+	parser.add_argument(
+		'--theme-file',
+		type=str,
+		help='Select a custom theme file for rofi. E.g. --theme-file "~/path/to/your/theme.rasi"'
+	)
+
 	parser.set_defaults(auto_select=False)
 
 	# Read arguments from command line
 	args = parser.parse_args()
 
+	# theme path
+	script_path = os.path.dirname( sys.argv[0] )
+	full_script_path = os.path.abspath( script_path )
+	rofi_theme_path = full_script_path + '/rofi-themes-collection/themes/' + args.theme + ".rasi"
 
 	is_auto_select = args.auto_select # Set to True for auto selecting the first result in rofi's list that matches what we type. This saves you from pressing enter.
+
+	# Override the theme with user's custom theme.
+	if args.theme_file:
+		rofi_theme_path = args.theme_file
 
 	if args.window_switcher:
 		window_switcher()

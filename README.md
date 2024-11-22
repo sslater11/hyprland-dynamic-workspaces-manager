@@ -59,7 +59,6 @@ On some keyboards you can press both Ctrl+Win keys together by pressing on the g
 cd ~/.config/hypr/
 git clone https://github.com/sslater11/hyprland-dynamic-workspaces-manager.git
 cd hyprland-dynamic-workspaces-manager/
-chmod +x hyprland-dynamic-workspaces-manager.py
 ./hyprland-dynamic-workspaces-manager.py
 ```
 See below for how to add this script to your Hyprland config.
@@ -129,19 +128,73 @@ You don't! Once a workspace is empty, Hyprland will delete it after you switch t
   - Just name each workspace differently as you should be doing anyway.
   - You can rename the workspaces.
 
+# Themes
+There quite a few themes available :).
+
+You can view all of these by running the `theme-previewer.sh` script. Warning! The `theme-previewer.sh` script will spam you out with rofi launchers. It will ask if you want to continue. Press ESC key multiple times to quit each rofi instance and view each theme.
+
+You can set the theme using the `--theme` argument, followed by one of these:
+```
+nord
+rounded-blue-dark
+rounded-gray-dark
+rounded-green-dark
+rounded-nord-dark
+rounded-orange-dark
+rounded-pink-dark
+rounded-purple-dark
+rounded-red-dark
+rounded-yellow-dark
+simple-tokyonight
+spotlight-dark
+spotlight
+squared-everforest
+squared-material-red
+squared-nord
+```
+
+## Custom Theme
+You can pass a custom rofi theme by using the `--theme-file` argument and passing it a path to the file.
+
 # Usage
 ```
-usage: hyprland-dynamic-workspaces-manager.py [-h] [--window-switcher] [--workspace-switcher] [--move-window] [--rename-workspace]
-                                              [--auto-select] [--no-auto-select]
+usage: hyprland-dynamic-workspaces-manager.py
+                                              [--window-switcher]
+                                              [--workspace-switcher]
+                                              [--move-window]
+                                              [--rename-workspace]
+                                              [--auto-select]
+                                              [--no-auto-select]
+                                              [--theme  
+                                                        nord
+                                                        rounded-blue-dark
+                                                        rounded-gray-dark
+                                                        rounded-green-dark
+                                                        rounded-nord-dark
+                                                        rounded-orange-dark
+                                                        rounded-pink-dark
+                                                        rounded-purple-dark
+                                                        rounded-red-dark
+                                                        rounded-yellow-dark
+                                                        simple-tokyonight
+                                                        spotlight-dark
+                                                        spotlight
+                                                        squared-everforest
+                                                        squared-material-red
+                                                        squared-nord
+                                              ]
+                                              [--theme-file THEME_FILE]
 
 options:
-  -h, --help            show this help message and exit
-  --window-switcher     Switch focus to another window.
-  --workspace-switcher  Switch to another workspace.
-  --move-window         Move the focused window to another workspace.
-  --rename-workspace    Rename the current workspace.
-  --auto-select         Will automatically select an entry in the list as you type (default: False)
-  --no-auto-select      Will NOT automatically select an entry in the list as you type (default: True)
+  -h, --help               show this help message and exit
+  --window-switcher        Switch focus to another window.
+  --workspace-switcher     Switch to another workspace.
+  --move-window            Move the focused window to another workspace.
+  --rename-workspace       Rename the current workspace.
+  --auto-select            Will automatically select an entry in the list as you type (default: False)
+  --no-auto-select         Will NOT automatically select an entry in the list as you type (default: True)
+  --theme theme_name       Set the theme
+  --theme-file THEME_FILE  Select a custom theme file for rofi. E.g. --theme-file "~/path/to/your/theme.rasi"
 ```
 
 # Credit
