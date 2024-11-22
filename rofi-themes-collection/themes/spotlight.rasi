@@ -1,8 +1,5 @@
-/*******************************************************************************
- * MACOS SPOTLIGHT LIKE THEME FOR ROFI 
- * User                 : LR-Tech               
- * Theme Repo           : https://github.com/lr-tech/rofi-themes-collection
- *******************************************************************************/
+/* MACOS SPOTLIGHT LIKE THEME FOR ROFI  */
+/* Author: Newman Sanchez (https://github.com/newmanls) */
 
 * {
     font:   "Montserrat 12";
@@ -87,7 +84,6 @@ element normal active {
 element alternate active {
     text-color: @bg2;
 }
-
 
 element selected normal, element selected active {
     background-color:   @bg2;
