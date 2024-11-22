@@ -15,7 +15,7 @@ These are my prefered key bindings.
 
 I use the Windows key as my modifier.
 
-On some keyboards you can press both Ctrl+Win keys together by pressing on the gap inbetween the keys. The same goes for Alt+Win key combination. It makes running programs and switching windows feel like the same action.
+I like using both Ctrl+Win keys together, and Alt+Win keys together. It makes launching apps and switching windows feel like the same action.
 
 | Action                                       | Keybinding                   |
 | -------------------------------------------- | ---------------------------- |
@@ -113,6 +113,8 @@ bind = $mainMod SHIFT, tab, workspace, m+1
 - Next Workspace - WindowsKey+Tab
 - Previous Workspace - WindowsKey+Shift+Tab
 
+## Why are you using Win+Alt and Win+Ctrl?
+I like using both Ctrl+Win keys together, and Alt+Win keys together. It makes launching apps and switching windows feel like the same action.
 
 ## Can I still use the normal workspace hotkeys 1-9?
 Yes. You can still use WindowsKey+1 to access the first workspace. You can rename this workspace and you can still switch to it using the normal workspace keybinding.
