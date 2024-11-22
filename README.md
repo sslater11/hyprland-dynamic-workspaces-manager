@@ -42,7 +42,7 @@ I like using both Ctrl+Win keys together, and Alt+Win keys together. It makes la
 - Rofi can select a line in our list.
   - This is used when we display a list of workspaces. Our current workspace will be highlighted.
 - Rofi can auto-select an item from the filtered list.
-  - As we type and land on the last option, it will select it without us needing to press enter. I've disabled this by default, but it can be enabled in the script by changing the variable at the start of the script `auto_select = True`.
+  - As we type and land on the last option, it will select it without us needing to press enter. I've disabled this by default, but it can be enabled by passing the `-auto-select` argument.
 
 
 # Installation
