@@ -116,7 +116,7 @@ bind = $mainMod SHIFT, tab, workspace, m+1
 - Move a window to another workspace WindowsKey+Shift+Z, then type the workspace name.
 - Move a window to a *NEW* workspace WindowsKey+Shift+Z, then type the name of the new workspace.
 - Rename a workspace WindowsKey+X
-- Delete a workspace and move all windows to another WindowsKey+Backspace
+- Delete the current workspace and move all windows on the current workspace to another workspace WindowsKey+Backspace
 - Move all windows on the current workspace to another workspace WindowsKey+Ctrl+Backspace OR WindowsKey+Alt+Backspace, then type the name of the workspace.
 - App launcher WindowsKey+Ctrl+Space 
 - App launcher including terminal commands WindowsKey+Ctrl+Shift+Space 
