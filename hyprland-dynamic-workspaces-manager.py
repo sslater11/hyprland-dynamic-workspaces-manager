@@ -251,7 +251,7 @@ def move_window_to_workspace():
 
 
 def move_current_windows_to_workspace_with_confirmation():
-	workspace = ask_user_which_workspace( "Which workspace do you want to move your windows to:" )
+	workspace = ask_user_which_workspace( "Move all windows to workspace:" )
 	move_current_windows_to_workspace( workspace )
 
 def move_current_windows_to_random_workspace():
