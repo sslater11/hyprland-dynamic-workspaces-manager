@@ -17,16 +17,20 @@ I use the Windows key as my modifier.
 
 I like using both Ctrl+Win keys together, and Alt+Win keys together. It makes launching apps and switching windows feel like the same action.
 
-| Action                                       | Keybinding                   |
-| -------------------------------------------- | ---------------------------- |
-| Switch to window                             | Alt  + Win + Space           |
-| App launcher                                 | Ctrl + Win + Space           |
-| App launcher alternate                       | Ctrl + Shift + Win + Space   |
-| Rename Workspace                             | Win + x                      |
-| Switch to Workspace                          | Win + z                      |
-| Move the current window to another workspace | Win + Shift + z              |
-| Next workspace                               | Win + Tab                    |
-| Previous workspace                           | Win + Shift + Tab            |
+| Action                                                      | Keybinding                   |
+| ----------------------------------------------------------- | ---------------------------- |
+| Switch to window                                            | Alt  + Win + Space           |
+| App launcher                                                | Ctrl + Win + Space           |
+| App launcher alternate                                      | Ctrl + Shift + Win + Space   |
+| Rename Workspace                                            | Win + x                      |
+| Switch to Workspace                                         | Win + z                      |
+| Move the current window to another workspace                | Win + Shift + z              |
+| Next workspace                                              | Win + Tab                    |
+| Previous workspace                                          | Win + Shift + Tab            |
+| Delete workspace and move all windows to another            | Win + Backspace              |
+| Move all workspace windows to another workspace with prompt | Ctrl + Win + Backspace       |
+|                                                             | OR                           |
+|                                                             | Alt  + Win + Backspace       |
 
 # Dependencies:
 - rofi - The wayland fork by lbonn found at https://github.com/lbonn/rofi.git
@@ -90,12 +94,17 @@ $window_switcher          = ~/.config/hypr/hyprland-dynamic-workspaces-manager/h
 $workspace_switcher       = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --workspace
 $move_window_to_workspace = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --move-window
 $rename_workspace         = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --rename-workspace
+$delete_current_workspace = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --delete-current-workspace
+$move_current_workspace_windows_to = ~/.config/hypr/hyprland-dynamic-workspaces-manager/hyprland-dynamic-workspaces-manager.py --move-current-workspace-windows-to
 
 # Keybindings - Dynamic workspace manager
 bind = $mainMod CTRL, space, exec, $app_launcher
 bind = $mainMod CTRL SHIFT, space, exec, $app_launcher_all
 bind = $mainMod ALT, space, exec, $window_switcher
 bind = $mainMod, X, exec, $rename_workspace
+bind = $mainMod, backspace, exec, $delete_current_workspace
+bind = $mainMod ALT,  backspace, exec, $move_current_workspace_windows_to
+bind = $mainMod CTRL, backspace, exec, $move_current_workspace_windows_to
 bind = $mainMod, Z, exec, $workspace_switcher
 bind = $mainMod SHIFT, Z, exec, $move_window_to_workspace
 
@@ -120,7 +129,18 @@ I like using both Ctrl+Win keys together, and Alt+Win keys together. It makes la
 Yes. You can still use WindowsKey+1 to access the first workspace. You can rename this workspace and you can still switch to it using the normal workspace keybinding.
 
 ## How do I delete a workspace?
-You don't! Once a workspace is empty, Hyprland will delete it after you switch to another workspace. This really does help with keeping our workspaces neat and condensed.
+You don't need to manually delete a workspace. Once a workspace is empty, and we switch to another, Hyprland will delete empty workspaces for us.
+You can however delete a workspace and move all windows on the current workspace to another.
+
+### Delete workspace with windows on it.
+See the option --delete-current-workspace 
+
+Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.
+
+### Delete workspace and move windows to a workspace using a prompt
+See the option --move-current-workspace-windows-to
+
+User selects the workspace to move all the current workspace's windows to. Moves all windows to another workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.
 
 # Issues / Bugs
 - New workspace name not set: In older versions of Hyperland(0.45.0 and below), switching to a new workspace will not name it properly, instead the workspace gets the name of its ID number which is a negative number like -1337. You'll have to rename it manually. Bug fixed in newer Hyprland versions.
@@ -161,42 +181,54 @@ You can pass a custom rofi theme by using the `--theme-file` argument and passin
 # Usage
 ```
 usage: hyprland-dynamic-workspaces-manager.py
-                                              [--window-switcher]
-                                              [--workspace-switcher]
-                                              [--move-window]
-                                              [--rename-workspace]
-                                              [--auto-select]
-                                              [--no-auto-select]
-                                              [--theme  
-                                                        nord
-                                                        rounded-blue-dark
-                                                        rounded-gray-dark
-                                                        rounded-green-dark
-                                                        rounded-nord-dark
-                                                        rounded-orange-dark
-                                                        rounded-pink-dark
-                                                        rounded-purple-dark
-                                                        rounded-red-dark
-                                                        rounded-yellow-dark
-                                                        simple-tokyonight
-                                                        spotlight-dark
-                                                        spotlight
-                                                        squared-everforest
-                                                        squared-material-red
-                                                        squared-nord
-                                              ]
-                                              [--theme-file THEME_FILE]
+        [-h]
+        [--window-switcher]
+        [--workspace-switcher]
+        [--move-window]
+        [--rename-workspace]
+        [--delete-current-workspace]
+        [--move-current-workspace-windows-to]
+        [--auto-select]
+        [--no-auto-select]
+        [--theme nord,
+                rounded-blue-dark,
+                rounded-gray-dark,
+                rounded-green-dark,
+                rounded-nord-dark,
+                rounded-orange-dark,
+                rounded-pink-dark,
+                rounded-purple-dark,
+                rounded-red-dark,
+                rounded-yellow-dark,
+                simple-tokyonight,
+                spotlight-dark,
+                spotlight,
+                squared-everforest,
+                squared-material-red,
+                squared-nord
+        ]
+        [--theme-file THEME_FILE]
 
 options:
-  -h, --help               show this help message and exit
-  --window-switcher        Switch focus to another window.
-  --workspace-switcher     Switch to another workspace.
-  --move-window            Move the focused window to another workspace.
-  --rename-workspace       Rename the current workspace.
-  --auto-select            Will automatically select an entry in the list as you type (default: False)
-  --no-auto-select         Will NOT automatically select an entry in the list as you type (default: True)
-  --theme theme_name       Set the theme
-  --theme-file THEME_FILE  Select a custom theme file for rofi. E.g. --theme-file "~/path/to/your/theme.rasi"
+  -h, --help            show this help message and exit
+  --window-switcher     Switch focus to another window.
+  --workspace-switcher  Switch to another workspace.
+  --move-window         Move the focused window to another workspace.
+  --rename-workspace    Rename the current workspace.
+
+  --delete-current-workspace
+                        Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.
+
+  --move-current-workspace-windows-to
+                        User selects the workspace to move all the current workspace's windows to. Moves all windows to another workspace, deletes the current workspace, and then switches to the workspace we dumped the
+                        windows on to.
+
+  --auto-select         Will automatically select an entry in the list as you type (default: False)
+  --no-auto-select      Will NOT automatically select an entry in the list as you type (default: True)
+  --theme {nord,rounded-blue-dark,rounded-gray-dark,rounded-green-dark,rounded-nord-dark,rounded-orange-dark,rounded-pink-dark,rounded-purple-dark,rounded-red-dark,rounded-yellow-dark,simple-tokyonight,spotlight-dark,spotlight,squared-everforest,squared-material-red,squared-nord}
+                        Set the theme
+  --theme-file THEME_FILE
+                        Select a custom theme file for rofi. E.g. --theme-file "~/path/to/your/theme.rasi"
 ```
 
 # Credit

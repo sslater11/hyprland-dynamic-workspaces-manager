@@ -17,13 +17,19 @@
 import subprocess
 import re
 import argparse
-import sys, os
+import sys, os, time
 import json
 
 class Workspace:
 	def __init__( self, id : str, name : str ):
 		self.id : str = id
 		self.name : str = name
+
+class Window:
+	def __init__( self, address : str, title : str, workspace_id : str, workspace_name : str):
+		self.address : str = address
+		self.title : str = title
+		self.workspace = Workspace( workspace_id, workspace_name )
 
 # Returns a list of Workspace objects for each workspace.
 def get_all_workspaces():
@@ -50,7 +56,7 @@ def get_current_workspace():
 			regex_groups = re.search( workspace_pattern, line )
 
 			if regex_groups != None:
-				return Workspace( id = regex_groups.group(2), name = regex_groups.group(2) )
+				return Workspace( id = regex_groups.group(2), name = regex_groups.group(3) )
 	except subprocess.CalledProcessError as some_error:
 		# User probably pressed Esc to quit rofi, returning an exit code of 1.
 		return None
@@ -142,6 +148,24 @@ def get_active_window_address():
 		print( "ERROR: No window address found, so returning an empty string and hoping the script doesn't break." )
 		return ""
 
+def get_all_windows():
+	all_windows = []
+	json_result = subprocess.check_output("hyprctl -j clients", shell=True )
+	json_result = json_result.decode('utf-8').strip()
+	all_windows_as_json = json.loads( json_result )
+	
+	# Create a list of all windows for passing to rofi.
+	for window in all_windows_as_json:
+		new_window = Window(
+			window['address'],
+			window['title'],
+			str(window['workspace']['id']),
+			window['workspace']['name'],
+		)
+		all_windows.append( new_window )
+	return all_windows
+	
+
 def window_switcher():
 	global is_auto_select
 	# Messy one-liner from emi89ro's post
@@ -208,19 +232,65 @@ def window_switcher():
 	if user_choice != "":
 		print( subprocess.check_output( "hyprctl dispatch focuswindow address:" + user_choice, shell=True ) )
 
-def workspace_switcher():
-	workspace = ask_user_which_workspace( "Switch to workspace:" )
-	if workspace != "":
+def workspace_switcher( workspace_name : str ):
+	if workspace_name != "":
 		# Default hyprland workspace switching. Rubbish for our use case of accessing any workspace at any time on any monitor.
 		#subprocess.check_output( "hyprctl dispatch workspace name:\"" + workspace + "\"", shell=True )
 
 		# XMonad style workspace switching. It will swap 2 workspaces, bringing the new one to the current monitor we're on. If both workspaces are on monitors, you will see them swap places.
-		subprocess.check_output( "hyprctl dispatch focusworkspaceoncurrentmonitor name:\"" + workspace + "\"", shell=True )
+		subprocess.check_output( "hyprctl dispatch focusworkspaceoncurrentmonitor name:\"" + workspace_name + "\"", shell=True )
+
+def workspace_switcher_with_confirmation():
+	workspace = ask_user_which_workspace( "Switch to workspace:" )
+	workspace_switcher( workspace_name=workspace )
 
 def move_window_to_workspace():
 	workspace = ask_user_which_workspace( "Move window to workspace" )
 	if workspace != "":
 		subprocess.check_output( "hyprctl dispatch movetoworkspace name:\"" + workspace + "\"", shell=True )
+
+
+def move_current_windows_to_workspace_with_confirmation():
+	workspace = ask_user_which_workspace( "Which workspace do you want to move your windows to:" )
+	move_current_windows_to_workspace( workspace )
+
+def move_current_windows_to_random_workspace():
+	# Find another workspace for moving everything to.
+	all_workspaces = get_all_workspaces()
+	current_workspace = get_current_workspace()
+	new_workspace = current_workspace
+
+	for workspace in all_workspaces:
+		if current_workspace.name != workspace.name:
+			new_workspace = workspace
+			break
+	
+	move_current_windows_to_workspace( new_workspace.name )
+
+
+# Moves each window to another workspace one by one, emptying the workspace.
+# Then it switches to the workspace it just dumped the windows onto.
+def move_current_windows_to_workspace( new_workspace_name ):
+	current_workspace = get_current_workspace()
+	if new_workspace_name == current_workspace.name:
+		print( "Only one workspace left, we can't delete the last workspace." )
+		return
+
+	# Count how many windows are left on our screen.
+	all_windows = get_all_windows()
+	window_count = 0
+	for w in all_windows:
+		if w.workspace.name == current_workspace.name:
+			window_count += 1
+
+	# Move windows one by one.
+	for i in range(window_count):
+		print( "Moving window to : " + new_workspace_name )
+		subprocess.check_output( "hyprctl dispatch movetoworkspacesilent name:\"" + new_workspace_name + "\"", shell=True )
+		time.sleep( 0.1 ) # Give the computer a chance to catch up.
+
+	# Switch focus to the new workspace.
+	workspace_switcher( new_workspace_name )
 
 
 if __name__ == "__main__":
@@ -246,12 +316,14 @@ if __name__ == "__main__":
 	# Initialize parser
 	parser = argparse.ArgumentParser()
 
-	parser.add_argument("--window-switcher",    action = "store_true",                        help = "Switch focus to another window.")
-	parser.add_argument("--workspace-switcher", action = "store_true",                        help = "Switch to another workspace.")
-	parser.add_argument("--move-window",        action = "store_true",                        help = "Move the focused window to another workspace.")
-	parser.add_argument("--rename-workspace",   action = "store_true",                        help = "Rename the current workspace.")
-	parser.add_argument("--auto-select",        action = "store_true",                        help = "Will automatically select an entry in the list as you type (default: False)")
-	parser.add_argument("--no-auto-select",     action = "store_false", dest = "auto-select", help = "Will NOT automatically select an entry in the list as you type (default: True)")
+	parser.add_argument("--window-switcher",                   action = "store_true",                        help = "Switch focus to another window.")
+	parser.add_argument("--workspace-switcher",                action = "store_true",                        help = "Switch to another workspace.")
+	parser.add_argument("--move-window",                       action = "store_true",                        help = "Move the focused window to another workspace.")
+	parser.add_argument("--rename-workspace",                  action = "store_true",                        help = "Rename the current workspace.")
+	parser.add_argument("--delete-current-workspace",          action = "store_true",                        help = "Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.")
+	parser.add_argument("--move-current-workspace-windows-to", action = "store_true",                        help = "User selects the workspace to move all the current workspace's windows to. Moves all windows to another workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.")
+	parser.add_argument("--auto-select",                       action = "store_true",                        help = "Will automatically select an entry in the list as you type (default: False)")
+	parser.add_argument("--no-auto-select",                    action = "store_false", dest = "auto-select", help = "Will NOT automatically select an entry in the list as you type (default: True)")
 
 	parser.add_argument(
 		'--theme',
@@ -285,10 +357,14 @@ if __name__ == "__main__":
 	if args.window_switcher:
 		window_switcher()
 	elif args.workspace_switcher:
-		workspace_switcher()
+		workspace_switcher_with_confirmation()
 	elif args.move_window:
 		move_window_to_workspace()
 	elif args.rename_workspace:
 		rename_workspace()
+	elif args.delete_current_workspace:
+		move_current_windows_to_random_workspace()
+	elif args.move_current_workspace_windows_to:
+		move_current_windows_to_workspace_with_confirmation()
 	else:
 		parser.print_help()
