@@ -7,6 +7,7 @@ This script allows me to create workspaces on the fly, name them and switch betw
 - Rename a workspace.
 - Move a window to any workspace.
 - Switch to any window.
+- Move all windows on the current workspace to another workspace.
 
 https://github.com/sslater11/hyprland-dynamic-workspaces-manager/assets/43177940/47113bd3-9059-48d1-b643-9804b615ac2f
 
