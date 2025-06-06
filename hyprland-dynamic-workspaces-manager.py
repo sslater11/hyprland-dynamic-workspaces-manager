@@ -46,6 +46,7 @@ def get_all_workspaces():
 
 	return all_workspaces
 
+# Gets the current workspace, ignoring the special workspace.
 def get_current_workspace():
 	try:
 		command = "hyprctl activeworkspace"
@@ -53,6 +54,23 @@ def get_current_workspace():
 		workspace = workspace.decode().strip()
 		for line in workspace.split("\n"):
 			workspace_pattern = "(^workspace ID )(-*[0-9]+) \\((.*)(\\) on .*:$)"
+			regex_groups = re.search( workspace_pattern, line )
+
+			if regex_groups != None:
+				return Workspace( id = regex_groups.group(2), name = regex_groups.group(3) )
+	except subprocess.CalledProcessError as some_error:
+		# User probably pressed Esc to quit rofi, returning an exit code of 1.
+		return None
+	return None
+
+# Gets the current workspace, even if it's a special workspace one or not.
+def get_workspace_for_active_window():
+	try:
+		command = "hyprctl activewindow"
+		workspace = subprocess.check_output( command, shell=True )
+		workspace = workspace.decode().strip()
+		for line in workspace.split("\n"):
+			workspace_pattern = "(workspace: )(-*[0-9]+) \\((.*)(\\).*)"
 			regex_groups = re.search( workspace_pattern, line )
 
 			if regex_groups != None:
@@ -252,28 +270,40 @@ def move_window_to_workspace():
 
 def move_current_windows_to_workspace_with_confirmation():
 	workspace = ask_user_which_workspace( "Move all windows to workspace:" )
-	move_current_windows_to_workspace( workspace )
+	move_current_windows_to_workspace( workspace, allow_move_to_special=True )
 
 def move_current_windows_to_random_workspace():
 	# Find another workspace for moving everything to.
 	all_workspaces = get_all_workspaces()
-	current_workspace = get_current_workspace()
-	new_workspace = current_workspace
-
-	for workspace in all_workspaces:
-		if current_workspace.name != workspace.name:
-			new_workspace = workspace
-			break
+	current_workspace = get_workspace_for_active_window()
 	
-	move_current_windows_to_workspace( new_workspace.name )
+	# If we are on a special workspace, just move all windows to the current workspace below the special one.
+	if current_workspace.name.lower().startswith("special:"):
+		new_workspace = get_current_workspace()
+
+	# Find another workspace to move windows to.
+	else:
+		new_workspace = current_workspace
+
+		for workspace in all_workspaces:
+			if ( current_workspace.name != workspace.name ) and not workspace.name.lower().startswith("special:"):
+				new_workspace = workspace
+				break
+	
+	move_current_windows_to_workspace( new_workspace.name, allow_move_to_special=False )
 
 
 # Moves each window to another workspace one by one, emptying the workspace.
 # Then it switches to the workspace it just dumped the windows onto.
-def move_current_windows_to_workspace( new_workspace_name ):
-	current_workspace = get_current_workspace()
+def move_current_windows_to_workspace( new_workspace_name, allow_move_to_special=False ):
+	current_workspace = get_workspace_for_active_window()
+
 	if new_workspace_name == current_workspace.name:
-		print( "Only one workspace left, we can't delete the last workspace." )
+		print( "Can't move windows to the same workspace that they're already on." )
+		return
+	
+	elif ( allow_move_to_special == False ) and new_workspace_name.lower().startswith("special:"):
+		print( "Not moving to special workspace: " + new_workspace_name )
 		return
 
 	# Count how many windows are left on our screen.
@@ -320,7 +350,7 @@ if __name__ == "__main__":
 	parser.add_argument("--workspace-switcher",                action = "store_true",                        help = "Switch to another workspace.")
 	parser.add_argument("--move-window",                       action = "store_true",                        help = "Move the focused window to another workspace.")
 	parser.add_argument("--rename-workspace",                  action = "store_true",                        help = "Rename the current workspace.")
-	parser.add_argument("--delete-current-workspace",          action = "store_true",                        help = "Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.")
+	parser.add_argument("--delete-current-workspace",          action = "store_true",                        help = "Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to. If you are on a special workspace, the windows will be moved to the current workspace that is underneath it.")
 	parser.add_argument("--move-current-workspace-windows-to", action = "store_true",                        help = "User selects the workspace to move all the current workspace's windows to. Moves all windows to another workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.")
 	parser.add_argument("--auto-select",                       action = "store_true",                        help = "Will automatically select an entry in the list as you type (default: False)")
 	parser.add_argument("--no-auto-select",                    action = "store_false", dest = "auto-select", help = "Will NOT automatically select an entry in the list as you type (default: True)")

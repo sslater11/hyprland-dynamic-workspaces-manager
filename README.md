@@ -118,6 +118,8 @@ bind = $mainMod SHIFT, tab, workspace, m+1
 - Rename a workspace WindowsKey+X
 - Delete the current workspace and move all windows on the current workspace to another workspace WindowsKey+Backspace
 - Move all windows on the current workspace to another workspace WindowsKey+Ctrl+Backspace OR WindowsKey+Alt+Backspace, then type the name of the workspace.
+- Move all windows on a special workspace to the current workspace below it: WindowsKey+Backspace whilst on the special workspace.
+- Move all windows on a special workspace to another workspace WindowsKey+Ctrl+Backspace OR WindowsKey+Alt+Backspace
 - App launcher WindowsKey+Ctrl+Space 
 - App launcher including terminal commands WindowsKey+Ctrl+Shift+Space 
 - Window Switcher -  WindowsKey+Alt+Space 
@@ -137,7 +139,7 @@ You can however delete a workspace and move all windows on the current workspace
 ### Delete workspace with windows on it.
 See the option --delete-current-workspace 
 
-Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.
+Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to. If you are on a special workspace, the windows will be moved to the current workspace which is underneath it.
 
 ### Delete workspace and move windows to a workspace using a prompt
 See the option --move-current-workspace-windows-to
@@ -220,6 +222,7 @@ options:
 
   --delete-current-workspace
                         Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.
+                        If you are on a special workspace, the windows will be moved to the current workspace that is underneath it.
 
   --move-current-workspace-windows-to
                         User selects the workspace to move all the current workspace's windows to. Moves all windows to another workspace, deletes the current workspace, and then switches to the workspace we dumped the
