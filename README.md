@@ -11,7 +11,7 @@ This script allows me to create workspaces on the fly, name them and switch betw
 https://github.com/sslater11/hyprland-dynamic-workspaces-manager/assets/43177940/47113bd3-9059-48d1-b643-9804b615ac2f
 
 # Keybindings
-These are my prefered key bindings. 
+These are my preferred key bindings. 
 
 I use the Windows key as my modifier.
 
@@ -67,7 +67,7 @@ cd hyprland-dynamic-workspaces-manager/
 ```
 See below for how to add this script to your Hyprland config.
 
-# Usecase
+# Use case
 I often group my windows by the project that I'm working on. I do this by placing them on a workspace with a name related to the project.
 
 Sometimes things get disorganised and I forget which workspace I moved a window to. Having the app switcher allows me to type in the name of a window and jump straight to it.
@@ -138,7 +138,7 @@ You can however delete a workspace and move all windows on the current workspace
 
 ### Delete workspace with windows on it.
 See the option --delete-current-workspace 
-
+ 
 Moves all windows to a random workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to. If you are on a special workspace, the windows will be moved to the current workspace which is underneath it.
 
 ### Delete workspace and move windows to a workspace using a prompt
@@ -147,9 +147,15 @@ See the option --move-current-workspace-windows-to
 User selects the workspace to move all the current workspace's windows to. Moves all windows to another workspace, deletes the current workspace, and then switches to the workspace we dumped the windows on to.
 
 # Issues / Bugs
-- New workspace name not set: In older versions of Hyperland(0.45.0 and below), switching to a new workspace will not name it properly, instead the workspace gets the name of its ID number which is a negative number like -1337. You'll have to rename it manually. Bug fixed in newer Hyprland versions.
+- Glitchy: Deleting a workspace / moving all windows to another workspace
+  - affects --delete-current-workspace and --move-current-workspace-windows-to
+  - hyprctl only lets us move an active window to another workspace.
+  - This script will move the current active window, wait 0.1 seconds for the window to disappear, then move the next active window and so on. 
+  - It means we need to wait for all windows to be moved before doing anything else.
+  - Open an issue if this is causing problems and maybe I can get hyprctl to move the windows all at once.
+- In older versions of Hyperland(0.45.0 and below): New workspace name not set: switching to a new workspace will not name it properly, instead the workspace gets the name of its ID number which is a negative number like -1337. You'll have to rename it manually. Bug fixed in newer Hyprland versions.
 - You can have multiple workspaces with the same name, but can only switch to one of those workspaces.
-  - Only an issue if you are creating workspaces with hyprctl.
+  - **It's only an issue if you are creating workspaces manually with hyprctl. Most people can ignore this.**
   - Hyprland's method that I use doesn't allow us to switch to a workspace by its ID number, so we have to use the workspace name, obviously this is an issue if we have multiple workspaces with the same name.
   - Just name each workspace differently as you should be doing anyway.
   - You can rename the workspaces.
